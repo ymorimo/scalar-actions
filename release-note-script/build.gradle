@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id 'com.github.spotbugs' version '5.1.3'
+    id 'net.ltgt.errorprone' version '2.0.2'
+    id "com.diffplug.spotless" version "6.22.0"
+}
+
+ext {
+    junitVersion = '5.8.1'
+    mockitoVersion = '5.5.0'
+    assertjVersion = '3.24.2'
+    spotbugsVersion = '4.7.3'
+    errorproneVersion = '2.22.0'
+    errorproneJavacVersion = '9+181-r4173-1'
+    googleJavaFormatVersion = '1.8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testImplementation "org.junit.platform:junit-platform-launcher"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.assertj:assertj-core:${assertjVersion}"
+
+    // for SpotBugs
+    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugsVersion}"
+    testCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugsVersion}"
+
+    // for Error Prone
+    errorprone "com.google.errorprone:error_prone_core:${errorproneVersion}"
+    errorproneJavac "com.google.errorprone:javac:${errorproneJavacVersion}"
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+spotbugsMain.reports {
+    html {
+        enabled = true
+        stylesheet = 'fancy-hist.xsl'
+    }
+}
+
+spotbugsTest.reports {
+    html {
+        enabled = true
+        stylesheet = 'fancy-hist.xsl'
+    }
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        importOrder()
+        removeUnusedImports()
+        googleJavaFormat(googleJavaFormatVersion)
+    }
+}
