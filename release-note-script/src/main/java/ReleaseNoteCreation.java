@@ -219,30 +219,33 @@ public class ReleaseNoteCreation {
   }
 
   public enum Category {
-    ENHANCEMENT("Enhancements"),
-    IMPROVEMENT("Improvements"),
-    BUGFIX("Bug fixes"),
-    DOCUMENTATION("Documentation"),
-    MISCELLANEOUS("Miscellaneous");
+    BACKWARD_INCOMPATIBLE("Backward incompatibles", "backward-incompatible"),
+    ENHANCEMENT("Enhancements", "enhancement"),
+    IMPROVEMENT("Improvements", "improvement"),
+    BUGFIX("Bug fixes", "bugfix"),
+    MISCELLANEOUS("Miscellaneous", "miscellaneous");
 
     private final String displayName;
+    private final String label;
 
-    Category(String displayName) {
+    Category(String displayName, String label) {
       this.displayName = displayName;
+      this.label = label;
     }
 
     public String getDisplayName() {
       return this.displayName;
     }
 
-    public static Category fromDisplayName(String name) {
+    public String getLabel() {
+      return this.label;
+    }
+
+    public static Category fromLabel(String label) {
       return Arrays.stream(Category.values())
-          .filter(
-              v ->
-                  v.name()
-                      .equalsIgnoreCase(name)) // v.name() is needed to compare with a label of a PR
+          .filter(v -> v.getLabel().equalsIgnoreCase(label))
           .findFirst()
-          .orElseThrow(() -> new IllegalArgumentException("Invalid name: " + name));
+          .orElseThrow(() -> new IllegalArgumentException("Invalid label: " + label));
     }
   }
 
@@ -322,7 +325,7 @@ public class ReleaseNoteCreation {
 
       String line;
       while ((line = br.readLine()) != null) {
-        if (isValidCategory(line)) return Category.fromDisplayName(line);
+        if (isValidCategory(line)) return Category.fromLabel(line);
       }
       return Category.MISCELLANEOUS;
     }
@@ -343,7 +346,7 @@ public class ReleaseNoteCreation {
 
     private boolean isValidCategory(String category) {
       return Arrays.stream(Category.values())
-          .anyMatch(target -> target.name().equalsIgnoreCase(category));
+          .anyMatch(target -> target.getLabel().equalsIgnoreCase(category));
     }
   }
 }

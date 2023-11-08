@@ -185,10 +185,10 @@ public class MergeReleaseNotes {
   }
 
   enum Category {
+    BACKWARD_INCOMPATIBLE("Backward incompatibles"),
     ENHANCEMENT("Enhancements"),
     IMPROVEMENT("Improvements"),
     BUGFIX("Bug fixes"),
-    DOCUMENTATION("Documentation"),
     MISCELLANEOUS("Miscellaneous");
 
     private final String displayName;
@@ -203,7 +203,7 @@ public class MergeReleaseNotes {
 
     public static Category getByDisplayName(String displayName) {
       return Arrays.stream(Category.values())
-          .filter(v -> v.displayName.equals(displayName))
+          .filter(v -> v.getDisplayName().equals(displayName))
           .findFirst()
           .orElseThrow(() -> new IllegalArgumentException("Invalid displayName: " + displayName));
     }
