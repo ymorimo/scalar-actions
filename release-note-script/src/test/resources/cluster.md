@@ -1,7 +1,7 @@
 ## Summary
 A dummy ScalarDB Cluster release note.
 
-## Backward incompatibles
+## Backward incompatible changes
 - A backward incompatible text of ScalarDB Cluster (#5)
 
 ## Enhancements

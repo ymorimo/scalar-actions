@@ -185,7 +185,7 @@ public class MergeReleaseNotes {
   }
 
   enum Category {
-    BACKWARD_INCOMPATIBLE("Backward incompatibles"),
+    BACKWARD_INCOMPATIBLE("Backward incompatible changes"),
     ENHANCEMENT("Enhancements"),
     IMPROVEMENT("Improvements"),
     BUGFIX("Bug fixes"),

@@ -1,7 +1,7 @@
 ## Summary
 A dummy ScalarDB GraphQL release note.
 
-## Backward incompatibles
+## Backward incompatible changes
 - A backward incompatible text of ScalarDB GraphQL (#5)
 
 ## Enhancements

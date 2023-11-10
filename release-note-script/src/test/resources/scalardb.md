@@ -1,7 +1,7 @@
 ## Summary
 A dummy ScalarDB release note.
 
-## Backward incompatibles
+## Backward incompatible changes
 - A backward incompatible text of ScalarDB (#5)
 
 ## Enhancements

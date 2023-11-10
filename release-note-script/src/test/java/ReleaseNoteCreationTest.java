@@ -214,7 +214,7 @@ public class ReleaseNoteCreationTest {
 
     String expected =
         "## Summary\n\n"
-            + "## Backward incompatibles\n"
+            + "## Backward incompatible changes\n"
             + "- A backward-incompatible text 1. (#7)\n"
             + "- A backward-incompatible text 2. (#8)\n\n"
             + "## Enhancements\n"

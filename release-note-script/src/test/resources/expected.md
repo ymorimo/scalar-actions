@@ -1,7 +1,7 @@
 ## Summary
 
 ## Community edition
-### Backward incompatibles
+### Backward incompatible changes
 - A backward incompatible text of ScalarDB (#5)
 ### Enhancements
 - An enhancement text of ScalarDB (#1)
@@ -11,7 +11,7 @@
 - A bug fixe text of ScalarDB [CVE-1234-5678](dummy) (#3)
 
 ## Enterprise edition
-### Backward incompatibles
+### Backward incompatible changes
 #### ScalarDB Cluster
 - A backward incompatible text of ScalarDB Cluster
 #### ScalarDB GraphQL

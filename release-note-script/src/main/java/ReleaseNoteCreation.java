@@ -219,7 +219,7 @@ public class ReleaseNoteCreation {
   }
 
   public enum Category {
-    BACKWARD_INCOMPATIBLE("Backward incompatibles", "backward-incompatible"),
+    BACKWARD_INCOMPATIBLE("Backward incompatible changes", "backward-incompatible"),
     ENHANCEMENT("Enhancements", "enhancement"),
     IMPROVEMENT("Improvements", "improvement"),
     BUGFIX("Bug fixes", "bugfix"),
