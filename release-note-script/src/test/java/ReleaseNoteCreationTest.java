@@ -104,12 +104,15 @@ public class ReleaseNoteCreationTest {
         "4",
         ReleaseNoteCreation.Category.BUGFIX,
         "Same as #1\nAdditional comment 2.");
+    addMockBehaviourToGitHubContext(
+        ghContextMock, "5", ReleaseNoteCreation.Category.BACKWARD_INCOMPATIBLE, "Same as #1\n");
 
     ReleaseNoteCreation sut = new ReleaseNoteCreation(ghContextMock);
     sut.extractReleaseNoteInfo("1");
     sut.extractReleaseNoteInfo("2");
     sut.extractReleaseNoteInfo("3");
     sut.extractReleaseNoteInfo("4");
+    sut.extractReleaseNoteInfo("5");
 
     // Act
     sut.assortSameAsItems();
@@ -119,6 +122,8 @@ public class ReleaseNoteCreationTest {
         sut.categoryMap;
     List<ReleaseNoteCreation.ReleaseNoteText> releaseNoteTexts;
 
+    releaseNoteTexts = categoryMap.get(ReleaseNoteCreation.Category.BACKWARD_INCOMPATIBLE);
+    assertThat(releaseNoteTexts).isEmpty();
     releaseNoteTexts = categoryMap.get(ReleaseNoteCreation.Category.IMPROVEMENT);
     assertThat(releaseNoteTexts).isEmpty();
     releaseNoteTexts = categoryMap.get(ReleaseNoteCreation.Category.BUGFIX);
@@ -129,7 +134,7 @@ public class ReleaseNoteCreationTest {
     assertThat(releaseNoteTexts.size()).isEqualTo(1);
 
     ReleaseNoteCreation.ReleaseNoteText releaseNoteText = releaseNoteTexts.get(0);
-    assertThat(releaseNoteText.prNumbers).containsOnly("1", "2", "3", "4");
+    assertThat(releaseNoteText.prNumbers).containsOnly("1", "2", "3", "4", "5");
     assertThat(releaseNoteText.category).isEqualTo(ReleaseNoteCreation.Category.ENHANCEMENT);
     assertThat(releaseNoteText.text)
         .isEqualTo("A topic pull request. Additional comment 1. Additional comment 2.");
@@ -182,11 +187,19 @@ public class ReleaseNoteCreationTest {
         ReleaseNoteCreation.Category.BUGFIX,
         "Same as #1\nAdditional comment 2.");
     addMockBehaviourToGitHubContext(
-        ghContextMock, "5", ReleaseNoteCreation.Category.IMPROVEMENT, "An improvement text");
+        ghContextMock, "5", ReleaseNoteCreation.Category.IMPROVEMENT, "An improvement text.");
     addMockBehaviourToGitHubContext(
-        ghContextMock, "6", ReleaseNoteCreation.Category.BUGFIX, "A bugfix text");
+        ghContextMock, "6", ReleaseNoteCreation.Category.BUGFIX, "A bugfix text.");
     addMockBehaviourToGitHubContext(
-        ghContextMock, "7", ReleaseNoteCreation.Category.DOCUMENTATION, "A documentation text");
+        ghContextMock,
+        "7",
+        ReleaseNoteCreation.Category.BACKWARD_INCOMPATIBLE,
+        "A backward-incompatible text 1.");
+    addMockBehaviourToGitHubContext(
+        ghContextMock,
+        "8",
+        ReleaseNoteCreation.Category.BACKWARD_INCOMPATIBLE,
+        "A backward-incompatible text 2.");
 
     ReleaseNoteCreation sut = new ReleaseNoteCreation(ghContextMock);
     sut.extractReleaseNoteInfo("1");
@@ -196,18 +209,20 @@ public class ReleaseNoteCreationTest {
     sut.extractReleaseNoteInfo("5");
     sut.extractReleaseNoteInfo("6");
     sut.extractReleaseNoteInfo("7");
+    sut.extractReleaseNoteInfo("8");
     sut.assortSameAsItems();
 
     String expected =
         "## Summary\n\n"
+            + "## Backward incompatible changes\n"
+            + "- A backward-incompatible text 1. (#7)\n"
+            + "- A backward-incompatible text 2. (#8)\n\n"
             + "## Enhancements\n"
             + "- A topic pull request. Additional comment 1. Additional comment 2. (#1 #2 #3 #4)\n\n"
             + "## Improvements\n"
-            + "- An improvement text (#5)\n\n"
+            + "- An improvement text. (#5)\n\n"
             + "## Bug fixes\n"
-            + "- A bugfix text (#6)\n\n"
-            + "## Documentation\n"
-            + "- A documentation text (#7)\n\n\n";
+            + "- A bugfix text. (#6)\n\n\n";
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream(); // Capture the standard output
     System.setOut(new PrintStream(baos, false, StandardCharsets.UTF_8));
@@ -222,11 +237,12 @@ public class ReleaseNoteCreationTest {
 
   static Stream<Arguments> extractReleaseNoteInfo_normalText_addedCorrectCategory() {
     return Stream.of(
-        arguments(ReleaseNoteCreation.Category.ENHANCEMENT, "a release note text in enhancements"),
-        arguments(ReleaseNoteCreation.Category.IMPROVEMENT, "a release note text in iimporvements"),
-        arguments(ReleaseNoteCreation.Category.BUGFIX, "a release note text in bugfixes"),
         arguments(
-            ReleaseNoteCreation.Category.DOCUMENTATION, "a release note text in documentation"),
+            ReleaseNoteCreation.Category.BACKWARD_INCOMPATIBLE,
+            "a release note text in backward incompatibles"),
+        arguments(ReleaseNoteCreation.Category.ENHANCEMENT, "a release note text in enhancements"),
+        arguments(ReleaseNoteCreation.Category.IMPROVEMENT, "a release note text in improvements"),
+        arguments(ReleaseNoteCreation.Category.BUGFIX, "a release note text in bug fixes"),
         arguments(
             ReleaseNoteCreation.Category.MISCELLANEOUS, "a release note text in miscellaneous"));
   }

@@ -1,6 +1,9 @@
 ## Summary
 A dummy ScalarDB release note.
 
+## Backward incompatible changes
+- A backward incompatible text of ScalarDB (#5)
+
 ## Enhancements
 - An enhancement text of ScalarDB (#1)
 
@@ -9,6 +12,3 @@ A dummy ScalarDB release note.
 
 ## Bug fixes
 - A bug fixe text of ScalarDB [CVE-1234-5678](dummy) (#3)
-
-## Documentation
-- A documentation text of ScalarDB (#4)
