@@ -258,6 +258,7 @@ public class ReleaseNoteCreation {
   public static class GitHubContext {
 
     private static final String MERGED_STATE = "merged";
+    private static final int LIMIT_NUMBER_OF_RETRIEVE_PULL_REQUESTS = 10000;
 
     private final String owner;
     private final String projectTitlePrefix;
@@ -272,10 +273,14 @@ public class ReleaseNoteCreation {
     }
 
     private String getProjectId() throws Exception {
+      /*
+       * Includes closed project if we get the project list so that we can run
+       * this script to the closed project for debug.
+       */
       BufferedReader br =
           runSubProcessAndGetOutputAsReader(
               format(
-                  "gh project list --owner %s | awk '/%s/ {print}' | awk '/%s/ {print $1}'",
+                  "gh project list --owner %s --closed | awk '/%s/ {print}' | awk '/%s/ {print $1}'",
                   this.owner, this.projectTitlePrefix, this.version));
 
       String line = br.readLine(); // Assuming only one line exists.
@@ -287,9 +292,9 @@ public class ReleaseNoteCreation {
       BufferedReader br =
           runSubProcessAndGetOutputAsReader(
               format(
-                  "gh project item-list %s --owner %s --limit 200 | awk -F'\\t' '/%s\\t/ {print"
+                  "gh project item-list %s --owner %s --limit %d | awk -F'\\t' '/%s\\t/ {print"
                       + " $3}'",
-                  projectId, this.owner, this.repository));
+                  projectId, this.owner, LIMIT_NUMBER_OF_RETRIEVE_PULL_REQUESTS, this.repository));
 
       String line;
       List<String> prNumbers = new ArrayList<>();
