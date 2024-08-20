@@ -301,7 +301,7 @@ public class ReleaseNoteCreation {
       BufferedReader br =
           runSubProcessAndGetOutputAsReader(
               format(
-                  "gh project item-list %s --owner %s --limit %d | awk -F'\\t' '/%s\\t/ {print"
+                  "gh project item-list %s --owner %s --limit %d | awk -F'\\t' '/\\/%s\\t/ {print"
                       + " $3}'",
                   projectId, this.owner, LIMIT_NUMBER_OF_RETRIEVE_PULL_REQUESTS, this.repository));
 
