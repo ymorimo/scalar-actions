@@ -281,11 +281,20 @@ public class ReleaseNoteCreation {
           runSubProcessAndGetOutputAsReader(
               format(
                   "gh project list --owner %s --closed | awk '/%s/ {print}' | awk '/%s/ {print $1}'",
-                  this.owner, this.projectTitlePrefix, this.version));
+                  this.owner, this.projectTitlePrefix, getVersion()));
 
       String line = br.readLine(); // Assuming only one line exists.
       if (line == null) throw new RuntimeException("Couldn't get the projectId");
       return line;
+    }
+
+    private String getVersion() {
+      int index = this.version.indexOf("-");
+      if (index == -1) {
+        return this.version;
+      }
+      // Remove the suffix after the dash. (e.g., 4.0.0-rc1 -> 4.0.0)
+      return this.version.substring(0, index);
     }
 
     private List<String> getPullRequestNumbers(String projectId) throws Exception {
