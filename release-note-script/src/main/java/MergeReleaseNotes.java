@@ -36,10 +36,12 @@ public class MergeReleaseNotes {
       new EnumMap<>(Edition.class);
 
   public static void main(String... args) throws Exception {
-    if (args.length == 0) {
-      System.err.printf(
-          "Usage: java %s.java scalardb.md cluster.md graphql.md sql.md%n",
-          MergeReleaseNotes.class.getSimpleName());
+
+    if (args.length > 0) {
+      if (args[0].equals("-h") || args[0].equals("--help")) {
+        System.err.printf("Usage: java %s.java%n", MergeReleaseNotes.class.getSimpleName());
+        System.exit(0);
+      }
     }
 
     MergeReleaseNotes mergeReleaseNotes = new MergeReleaseNotes();
