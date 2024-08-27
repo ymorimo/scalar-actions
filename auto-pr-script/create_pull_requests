@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+
+set -e -o pipefail; [[ -n "$DEBUG" ]] && set -x
+
+if [[ $# -lt 5 ]]; then
+	echo "usage: $0 pull_request_id pull_request_url pull_request_title commit_sha assignee branches"
+	exit 1
+fi
+
+pull_request_id=$1
+shift
+pull_request_url=$1
+shift
+pull_request_title=$1
+shift
+commit_sha=$1
+shift
+assignee=$1
+shift
+branches=("$@")
+
+function main(){
+	# Use the author info of the original Git commit
+	git config --global user.email $(git show -s --format='%ae' $commit_sha)
+	git config --global user.name $(git show -s --format='%an' $commit_sha)
+
+	git fetch origin
+
+	# Create PRs based on the target support branches and release branches
+	for branch in ${branches[@]}; do
+		new_branch="$branch-pull-$pull_request_id"
+
+		# Create a new temp branch, push it and create a PR for the change.
+		# But create an issue if anything fails.
+		cherry_pick_and_create_pull_request $branch $new_branch || create_issue $branch
+	done
+}
+
+function cherry_pick_and_create_pull_request () {
+	local branch=$1
+	local new_branch=$2
+
+	# Cleanup just in case
+	git checkout .
+	git clean -f
+
+	git checkout $branch
+	git checkout -b $new_branch
+	if git cherry-pick --no-rerere-autoupdate -m1 $commit_sha;
+	then
+		# If the cherry-pick succeeds, creates the backport PR with it
+		git push origin $new_branch
+		git status
+		pr_body=$(get_successfull_backport_pr_body)
+		create_pr $branch "${pr_body}"
+	else
+		# If the cherry-pick fails, creates the backport PR draft containing an empty commit
+		git cherry-pick --abort
+		git commit --allow-empty -m "Empty commit [skip ci]"
+		git push origin $new_branch
+		git status
+		pr_body=$(get_failed_backport_pr_body)
+		create_pr $branch "${pr_body}" --draft
+	fi
+}
+
+function create_pr(){
+	local branch=$1
+	shift
+	local body=$1
+	shift
+	local other_options=$@
+
+	gh pr create --assignee $assignee \
+				 --base "$branch" \
+				 --title "Backport to branch($branch) : $pull_request_title" \
+				 --body "${body}" \
+				 $other_options
+}
+
+function get_successfull_backport_pr_body() {
+	#The following heredoc syntax between the END delimiters requires to use tab indentation. Space indentation will result in a runtime error.
+	body=$(cat <<-END
+	This is an automated backport of the following:
+
+	- **Original PR:** $pull_request_url
+	- **Backported commit:** $commit_sha
+
+	Please merge this PR after all checks have passed.
+	END
+	)
+
+	echo "${body}"
+}
+
+function get_failed_backport_pr_body() {
+	#The following heredoc syntax between the END delimiters requires to use tab indentation. Space indentation will result in a runtime error.
+	body=$(cat <<-END
+	This is an automated request for a manual backport of the following:
+
+	- **Original PR:** $pull_request_url
+	- **Commit to backport:** $commit_sha
+
+	1. Resolve any conflicts that occur during the cherry-picking process.
+
+	\`\`\`console
+	git fetch origin &&
+	git checkout $new_branch &&
+	git cherry-pick --no-rerere-autoupdate -m1 $commit_sha
+	\`\`\`
+
+	2. Push the changes.
+	3. Merge this PR after all checks have passed.
+
+	Thank you!
+	END
+	)
+
+	echo "${body}"
+}
+
+function create_issue () {
+	local branch=$1
+
+	gh issue create --assignee $assignee \
+		--title "Backport to branch($branch) failed: $pull_request_title" \
+		--body "Backport of $pull_request_url for commit $commit_sha to branch($branch) failed"
+}
+
+main

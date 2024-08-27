@@ -1,0 +1,78 @@
+name: Auto-PR reusable action
+
+on:
+  workflow_call:
+    inputs:
+      project_base_name:
+        required: true
+        type: string
+        description: 'The base name of the projects used in the repository. For example, "ScalarDB" if projects are named "ScalarDB <version>"'
+
+env:
+  TERM: dumb
+jobs:
+  create_backport_pull_requests:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_PR_PAT }}
+      # Escape the PR title. See https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable for details
+      PR_TITLE: ${{ github.event.pull_request.title }}
+    steps:
+      - name: Checkout auto-pr scripts
+        uses: actions/checkout@v4
+        with:
+          repository: scalar-labs/actions
+          sparse-checkout: auto-pr-script
+          ref: main
+          path: auto-pr
+
+      - name: Checkout the target repository
+        uses: actions/checkout@v4
+        with:
+          # This is necessary to avoid unexpected auto-merge in git cherry-pick
+          fetch-depth: 0
+          # This is necessary for git-push
+          token: ${{ secrets.GH_PR_PAT }}
+          path: repo
+
+      - name: Create pull requests
+        working-directory: repo
+        env:
+          SCRIPT_PATH: ../auto-pr/auto-pr-script
+        run: |
+          assignee=$($SCRIPT_PATH/fetch_gh_user_info "${{ github.event.repository.owner.login }}" "${{ github.event.repository.name }}" "${{ github.event.pull_request.user.login }}")
+          echo -------------
+          echo "assignee: $assignee"
+          echo -------------
+          if [[ -z $assignee ]]; then
+            # For instance, we can't assign `dependabot` to a new PR.
+            new_pr_assignee="${{ github.event.pull_request.merged_by.login }}"
+          else
+            new_pr_assignee="${{ github.event.pull_request.user.login }}"
+          fi
+
+          versions=$($SCRIPT_PATH/fetch_gh_proj_versions "${{ github.event.repository.owner.login }}" "${{ github.event.repository.name }}" "${{ github.event.number }}" "${{ inputs.project_base_name}}")
+          echo -------------
+          echo "versions:"
+          echo "$versions"
+          echo -------------
+          
+          default_branch=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+          
+          branches=$($SCRIPT_PATH/conv_proj_version_to_branch $default_branch $versions)
+          # Remove the base branch from the list because the target change is already merged to the branch.
+          branches=$(echo "$branches" | sed "/^${{ github.base_ref }}$/d")
+          echo -------------
+          echo "branches:"
+          echo "$branches"
+          echo -------------
+
+          $SCRIPT_PATH/create_pull_requests \
+            "${{ github.event.number }}" \
+            "${{ github.event.pull_request.html_url }}" \
+            "$PR_TITLE" \
+            "${{ github.sha }}" \
+            "$new_pr_assignee" \
+            "$branches"
+
