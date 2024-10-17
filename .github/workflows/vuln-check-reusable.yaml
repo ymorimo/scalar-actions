@@ -17,6 +17,13 @@ on:
         description: 'JSON string representing a list of a pair of the name and the base name of the image. For example, ...' # TODO
         required: true
         type: string
+      version-command:
+        description: ''
+        required: false
+        type: string
+        default: |
+          ./gradlew :common:properties -q | grep version: | awk '{print $2}'
+
     secrets:
       CR_PAT:
         required: true
@@ -99,9 +106,8 @@ jobs:
         # if: always()  # TODO: needed?
         id: version
         run: |
-          VERSION=$(./gradlew :common:properties -q | grep "version:" | awk '{print $2}')
+          VERSION=$(${{ inputs.version-command }})
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
 
   vuln-check:
     runs-on: ubuntu-latest
