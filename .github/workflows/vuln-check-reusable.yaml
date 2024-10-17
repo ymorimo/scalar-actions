@@ -40,7 +40,7 @@ jobs:
       - name: Checkout vuln-check scripts
         uses: actions/checkout@v4
         with:
-          repository: ymorimo/actions
+          repository: ymorimo/scalar-actions
           sparse-checkout: vuln-check-script
           ref: main
           path: vuln-check
