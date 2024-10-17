@@ -54,7 +54,7 @@ jobs:
       - id: prepare-target-ref
         name: Prepare target-ref
         env:
-          SCRIPT_PATH: ../vuln-check/vuln-check-script
+          SCRIPT_PATH: ./vuln-check/vuln-check-script
         run: |
           # Find the latest release name if `find-latest-release` is set to true. Use the value of `target-ref` as is otherwise.
           if [[ ${{ inputs.find-latest-release }} = 'true' ]]; then
