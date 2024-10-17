@@ -18,11 +18,11 @@ on:
         required: true
         type: string
       version-command:
-        description: ''
-        required: false
+        description: '...' # TODO
+        required: true
         type: string
-        default: |
-          ./gradlew :common:properties -q | grep version: | awk '{print $2}'
+        # default: |
+        #   ./gradlew :common:properties -q | grep version: | awk '{print $2}'
 
     secrets:
       CR_PAT:
