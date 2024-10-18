@@ -30,6 +30,8 @@ on:
 
 env:
   TERM: dumb
+  GPR_USERNAME: ${{ github.repository_owner }}
+  GPR_PASSWORD: ${{ secrets.CR_PAT }}
 
 jobs:
   build:
