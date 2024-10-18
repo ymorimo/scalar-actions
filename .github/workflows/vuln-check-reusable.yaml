@@ -14,7 +14,8 @@ on:
         type: boolean
         default: false
       images:
-        description: 'JSON string representing a list of pairs of Docker image names and base names. For example, if \'[["ScalarDL Ledger", "scalar-ledger"], ["ScalarDL Auditor", "scalar-auditor"]\' is specified, the scanner will scan `ghcr.io/scalar-labs/scalar-ledger:<tag>` and `ghcr.io/scalar-labs/scalar-auditor:<tag>`.'
+        # description: 'JSON string representing a list of pairs of Docker image names and base names. For example, if \'[["ScalarDL Ledger", "scalar-ledger"], ["ScalarDL Auditor", "scalar-auditor"]\' is specified, the scanner will scan `ghcr.io/scalar-labs/scalar-ledger:<tag>` and `ghcr.io/scalar-labs/scalar-auditor:<tag>`.'
+        description: 'TODO'
         required: true
         type: string
       version-command:
