@@ -24,6 +24,7 @@ on:
         default: "./gradlew :common:properties -q | grep version: | awk '{print $2}'"
     secrets:
       CR_PAT:
+        description: 'GitHub Personal Access Token (PAT) to access GitHub Container Registry. It is also used for GitHub CLI (GH_TOKEN).'
         required: true
       SLACK_SECURITY_WEBHOOK_URL:
         required: true
