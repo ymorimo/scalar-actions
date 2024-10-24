@@ -26,7 +26,7 @@ on:
       CR_PAT:
         description: 'GitHub Personal Access Token (PAT) to access GitHub Container Registry. It is also used for GitHub CLI (GH_TOKEN).'
         required: true
-      SLACK_SECURITY_WEBHOOK_URL:
+      SLACK_WEBHOOK_URL:
         description: 'Slack webhook URL to post vulnerability check failure. If empty, the action will not post a message.'
         required: false
 
@@ -118,7 +118,7 @@ jobs:
       - name: Check if Slack webhook URL is set
         id: slack-webhook
         run: |
-          if [[ -n "${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}" ]]; then
+          if [[ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]]; then
             echo "Slack webhook URL is set. Post a message if the vulnerability check fails."
             echo "enabled=true" >> $GITHUB_OUTPUT
           else
@@ -160,5 +160,5 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
