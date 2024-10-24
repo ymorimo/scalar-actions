@@ -27,7 +27,8 @@ on:
         description: 'GitHub Personal Access Token (PAT) to access GitHub Container Registry. It is also used for GitHub CLI (GH_TOKEN).'
         required: true
       SLACK_SECURITY_WEBHOOK_URL:
-        required: true
+        description: 'Slack webhook URL to post vulnerability check failure. If empty, the action will not post a message.'
+        required: false
 
 env:
   TERM: dumb
@@ -114,6 +115,17 @@ jobs:
     continue-on-error: true
 
     steps:
+      - name: Check if Slack webhook URL is set
+        id: slack-webhook
+        run: |
+          if [[ -n "${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}" ]]; then
+            echo "Slack webhook URL is set. Post a message if the vulnerability check fails."
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "Slack webhook URL is not set. Skip posting a message."
+            echo "enabled=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -132,7 +144,7 @@ jobs:
           timeout: '60m'
 
       - name: Post Trivy vulnerability check failure for ${{ matrix.image[0] }}
-        if: failure()
+        if: failure() && steps.slack-webhook.outputs.enabled == 'true'
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
