@@ -146,7 +146,7 @@ jobs:
 
       - name: Post Trivy vulnerability check failure for ${{ matrix.image[0] }}
         if: failure() && steps.slack-webhook.outputs.enabled == 'true'
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           payload: |
             {
