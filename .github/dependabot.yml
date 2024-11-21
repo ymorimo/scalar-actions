@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # For GitHub Actions workflows, update all actions on the main branch
+  - package-ecosystem: "github-actions"
+    groups:
+      actions on main branch:
+        patterns:
+          - "*"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "scalar-labs/scalardb"
