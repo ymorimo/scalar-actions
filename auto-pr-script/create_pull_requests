@@ -21,8 +21,8 @@ branches=("$@")
 
 function main(){
 	# Use the author info of the original Git commit
-	git config --global user.email $(git show -s --format='%ae' $commit_sha)
-	git config --global user.name $(git show -s --format='%an' $commit_sha)
+	git config --global user.email "$(git show -s --format='%ae' "$commit_sha")"
+	git config --global user.name "$(git show -s --format='%an' "$commit_sha")"
 
 	git fetch origin
 
@@ -49,7 +49,7 @@ function cherry_pick_and_create_pull_request () {
 	if git cherry-pick --no-rerere-autoupdate -m1 $commit_sha;
 	then
 		# If the cherry-pick succeeds, creates the backport PR with it
-		git push origin $new_branch
+		git push -u origin $new_branch
 		git status
 		pr_body=$(get_successfull_backport_pr_body)
 		create_pr $branch "${pr_body}"
@@ -57,7 +57,7 @@ function cherry_pick_and_create_pull_request () {
 		# If the cherry-pick fails, creates the backport PR draft containing an empty commit
 		git cherry-pick --abort
 		git commit --allow-empty -m "Empty commit [skip ci]"
-		git push origin $new_branch
+		git push -u origin $new_branch
 		git status
 		pr_body=$(get_failed_backport_pr_body)
 		create_pr $branch "${pr_body}" --draft
