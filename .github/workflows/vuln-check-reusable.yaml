@@ -148,18 +148,12 @@ jobs:
         if: failure() && steps.slack-webhook.outputs.enabled == 'true'
         uses: slackapi/slack-github-action@v2.0.0
         with:
+          webhook: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":octagonal_sign: The vulnerability check for ${{ matrix.image[0] }} on `${{ github.repository }}` <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|failed> with `${{ inputs.target-ref }}`"
-                  }
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: ":octagonal_sign: The vulnerability check for ${{ matrix.image[0] }} on `${{ github.repository }}` <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|failed> with `${{ inputs.target-ref }}`"
+
