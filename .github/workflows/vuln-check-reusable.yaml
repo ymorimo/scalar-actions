@@ -102,6 +102,10 @@ jobs:
           VERSION=$(${{ inputs.version-command }})
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: docker image inspect
+        run: |
+          docker image inspect ghcr.io/scalar-labs/scalardb-schema-loader:4.0.0-SNAPSHOT
+
   vuln-check:
     runs-on: ubuntu-latest
 
@@ -134,10 +138,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
 
-      - name: docker image inspect
-        run: |
-          docker image inspect ghcr.io/scalar-labs/${{ matrix.image[1] }}:${{ needs.build.outputs.version }}
-
       - name: Run Trivy vulnerability scanner for ${{ matrix.image[0] }}
         uses: aquasecurity/trivy-action@master
         with:
@@ -167,3 +167,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: docker image inspect
+        run: |
+          docker image inspect ghcr.io/scalar-labs/scalardb-schema-loader:4.0.0-SNAPSHOT
