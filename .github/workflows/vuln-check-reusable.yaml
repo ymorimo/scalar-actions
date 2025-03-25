@@ -102,9 +102,9 @@ jobs:
           VERSION=$(${{ inputs.version-command }})
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: docker image inspect
+      - name: "[DEV] Run docker images"
         run: |
-          docker image inspect ghcr.io/scalar-labs/scalardb-schema-loader:4.0.0-SNAPSHOT
+          docker images
 
   vuln-check:
     runs-on: ubuntu-latest
@@ -160,7 +160,3 @@ jobs:
                 text:
                   type: "mrkdwn"
                   text: ":octagonal_sign: The vulnerability check for ${{ matrix.image[0] }} on `${{ github.repository }}` <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|failed> with `${{ inputs.target-ref }}`"
-
-      - name: docker image inspect
-        run: |
-          docker image inspect ghcr.io/scalar-labs/scalardb-schema-loader:4.0.0-SNAPSHOT
