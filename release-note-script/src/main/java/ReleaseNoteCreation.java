@@ -2,6 +2,7 @@ import static java.lang.String.format;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,8 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * ReleaseNoteCreation creates the body of the release note for a repository of Scalar products. The
@@ -75,8 +78,15 @@ public class ReleaseNoteCreation {
     List<String> prNumbers = ghContext.getPullRequestNumbers(projectId);
 
     for (String prNumber : prNumbers) {
-      extractReleaseNoteInfo(prNumber);
+      try {
+        System.err.println("INFO: Processing PR: " + prNumber);
+        extractReleaseNoteInfo(prNumber);
+      } catch (Exception e) {
+        System.err.println("ERROR: failed processing the PR: " + prNumber);
+        e.printStackTrace();
+      }
     }
+
     assortSameAsItems();
     outputReleaseNote();
   }
@@ -259,6 +269,7 @@ public class ReleaseNoteCreation {
 
     private static final String MERGED_STATE = "merged";
     private static final int LIMIT_NUMBER_OF_RETRIEVE_PULL_REQUESTS = 10000;
+    private static final int PROCESS_TIME_OUT_IN_SEC = 10;
 
     private final String owner;
     private final String projectTitlePrefix;
@@ -354,8 +365,23 @@ public class ReleaseNoteCreation {
     BufferedReader runSubProcessAndGetOutputAsReader(String command) throws Exception {
       if (DEBUG != null) System.err.printf("Executed: %s%n", command);
       Process p = new ProcessBuilder("bash", "-c", command).start();
-      p.waitFor();
-      return new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8));
+
+      BufferedReader result = null;
+      try (BufferedReader br =
+          new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8)); ) {
+        String processOutput = br.lines().collect(Collectors.joining(System.lineSeparator()));
+        result = new BufferedReader(new StringReader(processOutput));
+      }
+
+      boolean isTerminated = p.waitFor(PROCESS_TIME_OUT_IN_SEC, TimeUnit.SECONDS);
+      if (!isTerminated) {
+        throw new RuntimeException(
+            format(
+                "WARN: Process was exceeded timeout(%d sec). command: %s%n",
+                PROCESS_TIME_OUT_IN_SEC, command));
+      }
+
+      return result;
     }
 
     private boolean isValidCategory(String category) {
