@@ -1,0 +1,92 @@
+name: Run gradlew docker
+description:
+
+inputs:
+  target-ref:
+    description: 'Target ref (branch, tag, release) to scan'
+    required: true
+    type: string
+    default: 'main'
+  find-latest-release:
+    description: 'Flag to find the latest version for specified `target-ref`'
+    required: false
+    type: boolean
+    default: false
+  version-command:
+    description: 'Shell command that prints the version string. It is used as the tag for Docker images to be scanned.'
+    required: false
+    type: string
+    default: "./gradlew :common:properties -q | grep version: | awk '{print $2}'"
+
+outputs:
+  version:
+    description: ""
+    value: ${{ steps.version.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout vuln-check scripts
+      uses: actions/checkout@v4
+      with:
+        repository: scalar-labs/actions
+        sparse-checkout: vuln-check-script
+        ref: main
+        path: vuln-check
+
+    - id: prepare-target-ref
+      name: Prepare target-ref
+      env:
+        # TODO: Script files can be moved to this action's direcoty?
+        SCRIPT_PATH: ./vuln-check/vuln-check-script
+      shell: bash
+      run: |
+        # Find the latest release name if `find-latest-release` is set to true. Use the value of `target-ref` as is otherwise.
+        if [[ ${{ inputs.find-latest-release }} = 'true' ]]; then
+          releases=$($SCRIPT_PATH/fetch_gh_releases "${{ github.event.repository.owner.login }}" "${{ github.event.repository.name }}")
+          echo -------------
+          echo "releases: $releases"
+          echo -------------
+          target_release=''
+          if [[ -n $releases ]]; then
+            target_release=$($SCRIPT_PATH/find_latest_release "${{ inputs.target-ref }}" $releases)
+          fi
+          if [[ -z $target_release ]]; then
+            echo "Can't find a target release"
+            exit 1
+          fi
+          echo $target_release
+          echo "target-ref=$target_release" >> $GITHUB_OUTPUT
+        else
+          echo "target-ref=${{ inputs.target-ref }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Checkout the target repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.prepare-target-ref.outputs.target-ref }}
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Docker build
+      shell: bash
+      run: ./gradlew docker
+
+    - name: Set version
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(${{ inputs.version-command }})
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+    - name: "[DEV] Run docker images"
+      shell: bash
+      run: |
+        docker images
