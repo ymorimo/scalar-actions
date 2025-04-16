@@ -89,4 +89,4 @@ runs:
     - name: "[DEV] Run docker images"
       shell: bash
       run: |
-        docker images
+        docker image ls --format json
