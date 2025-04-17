@@ -1,0 +1,37 @@
+name: Run Trivy vulnerability scanner
+description:
+inputs:
+  image-ref:
+    description:
+    required: true
+    type: string
+  slack-webhook-url:
+    description:
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Trivy vulnerability scanner for ${{ inputs.image-ref }}
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ inputs.image-ref }}
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+        timeout: '60m'
+
+    - name: Post Trivy vulnerability check failure for ${{ inputs.image-ref }}
+      if: failure() && inputs.slack-webhook-url
+      uses: slackapi/slack-github-action@v2.0.0
+      with:
+        webhook: ${{ inputs.slack-webhook-url }}
+        webhook-type: incoming-webhook
+        payload: |
+          blocks:
+            - type: "section"
+              text:
+                type: "mrkdwn"
+                text: ":octagonal_sign: The vulnerability check for ${{ inputs.image-ref }} on `${{ github.repository }}` <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|failed>"
