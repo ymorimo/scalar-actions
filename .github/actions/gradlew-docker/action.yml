@@ -11,6 +11,10 @@ inputs:
     required: false
     type: boolean
     default: false
+outputs:
+  docker-images:
+    description: A comma-separated list of Docker images built with gradlew build
+    value: ${{ steps.docker-images.outputs.docker-images }}
 
 runs:
   using: "composite"
@@ -72,7 +76,5 @@ runs:
       id: docker-images
       shell: bash
       run: |
-        # json=$(docker image ls --format '{{.Repository}}:{{.Tag}}' | jq -R -s -c 'split("\n") | map(select(length > 0))')
-        # printf 'docker-images-json=%q' $json >> $GITHUB_OUTPUT
         docker image ls --format '{{.Repository}}:{{.Tag}}' | tr '\n' ',' | sed 's/,$//'
-        docker image ls --format '{{.Repository}}:{{.Tag}}' | tr '\n' ',' | sed 's/,$//' >> $GITHUB_OUTPUT
+        echo "docker-images=$(docker image ls --format '{{.Repository}}:{{.Tag}}' | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
