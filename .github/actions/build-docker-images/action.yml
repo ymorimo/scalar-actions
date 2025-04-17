@@ -21,30 +21,19 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout vuln-check scripts
-      uses: actions/checkout@v4
-      with:
-        repository: scalar-labs/actions
-        sparse-checkout: vuln-check-script
-        ref: main
-        path: vuln-check
-
     - id: prepare-target-ref
       name: Prepare target-ref
-      env:
-        # TODO: Script files can be moved to this action's direcoty?
-        SCRIPT_PATH: ./vuln-check/vuln-check-script
       shell: bash
       run: |
         # Find the latest release name if `find-latest-release` is set to true. Use the value of `target-ref` as is otherwise.
         if [[ ${{ inputs.find-latest-release }} = 'true' ]]; then
-          releases=$($SCRIPT_PATH/fetch_gh_releases "${{ github.event.repository.owner.login }}" "${{ github.event.repository.name }}")
+          releases=$(fetch_gh_releases "${{ github.event.repository.owner.login }}" "${{ github.event.repository.name }}")
           echo -------------
           echo "releases: $releases"
           echo -------------
           target_release=''
           if [[ -n $releases ]]; then
-            target_release=$($SCRIPT_PATH/find_latest_release "${{ inputs.target-ref }}" $releases)
+            target_release=$(find_latest_release "${{ inputs.target-ref }}" $releases)
           fi
           if [[ -z $target_release ]]; then
             echo "Can't find a target release"
