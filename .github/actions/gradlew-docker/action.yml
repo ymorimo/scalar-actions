@@ -1,5 +1,6 @@
-name: Run gradlew docker
+name: Run gradlew docker # TODO: Build Docker images for the specified target ref, optionally finding the latest release
 description:
+
 inputs:
   target-ref:
     description: 'Target ref (branch, tag, release) to scan'
@@ -11,6 +12,7 @@ inputs:
     required: false
     type: boolean
     default: false
+
 outputs:
   docker-images:
     description: A comma-separated list of Docker images built with gradlew build
