@@ -16,7 +16,7 @@ inputs:
 outputs:
   docker-images:
     description: A comma-separated list of Docker images built with gradlew build
-    value: ${{ steps.docker-images.outputs.docker-images }}
+    value: ${{ steps.output-images.outputs.result }}
 
 runs:
   using: "composite"
@@ -74,9 +74,15 @@ runs:
       shell: bash
       run: ./gradlew docker
 
-    - name: List Docker images
-      id: docker-images
-      shell: bash
-      run: |
-        docker image ls --format '{{.Repository}}:{{.Tag}}' | tr '\n' ',' | sed 's/,$//'
-        echo "docker-images=$(docker image ls --format '{{.Repository}}:{{.Tag}}' | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
+    - name: Output built images
+      uses: actions/github-script@v7
+      id: output-images
+      with:
+        result-encoding: string
+        script: |
+          const {
+            exitCode,
+            stdout,
+            stderr
+          } = await exec.getExecOutput('docker image ls --format "{{.Repository}}:{{.Tag}}"');
+          return stdout
