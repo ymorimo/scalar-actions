@@ -86,7 +86,11 @@ runs:
         VERSION=$(${{ inputs.version-command }})
         echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-    - name: "[DEV] Run docker images"
+    - name: List Docker images
+      id: docker-images
       shell: bash
       run: |
-        docker image ls --format json
+        # json=$(docker image ls --format '{{.Repository}}:{{.Tag}}' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        # printf 'docker-images-json=%q' $json >> $GITHUB_OUTPUT
+        docker image ls --format '{{.Repository}}:{{.Tag}}' | tr '\n' ',' | sed 's/,$//'
+        docker image ls --format '{{.Repository}}:{{.Tag}}' | tr '\n' ',' | sed 's/,$//' >> $GITHUB_OUTPUT
