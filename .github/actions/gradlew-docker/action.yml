@@ -1,6 +1,5 @@
 name: Run gradlew docker
 description:
-
 inputs:
   target-ref:
     description: 'Target ref (branch, tag, release) to scan'
@@ -12,16 +11,6 @@ inputs:
     required: false
     type: boolean
     default: false
-  version-command:
-    description: 'Shell command that prints the version string. It is used as the tag for Docker images to be scanned.'
-    required: false
-    type: string
-    default: "./gradlew :common:properties -q | grep version: | awk '{print $2}'"
-
-outputs:
-  version:
-    description: ""
-    value: ${{ steps.version.outputs.version }}
 
 runs:
   using: "composite"
@@ -78,13 +67,6 @@ runs:
     - name: Docker build
       shell: bash
       run: ./gradlew docker
-
-    - name: Set version
-      id: version
-      shell: bash
-      run: |
-        VERSION=$(${{ inputs.version-command }})
-        echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
     - name: List Docker images
       id: docker-images
