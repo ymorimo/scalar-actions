@@ -114,7 +114,7 @@ jobs:
       - name: Upload images as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: docker-images-${{ github.run_id }}-${{ github.run_attempt }}
+          name: docker-images-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.target-ref }}
           path: images_output
           retention-days: 1
 
@@ -146,7 +146,7 @@ jobs:
       - name: Download Docker images artifact
         uses: actions/download-artifact@v4
         with:
-          name: docker-images-${{ github.run_id }}-${{ github.run_attempt }}
+          name: docker-images-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.target-ref }}
 
       - name: Load Docker image
         run: docker load -i ${{ matrix.image[1] }}.tar.gz
