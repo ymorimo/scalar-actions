@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GH_TOKEN: ${{ secrets.CR_PAT }}
+      GH_TOKEN: ${{ github.token }}
 
     outputs:
       version: ${{ steps.version.outputs.version }}
