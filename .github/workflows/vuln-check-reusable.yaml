@@ -23,24 +23,19 @@ on:
         type: string
         default: "./gradlew :common:properties -q | grep version: | awk '{print $2}'"
     secrets:
-      CR_PAT:
-        description: 'GitHub Personal Access Token (PAT) to access GitHub Container Registry. It is also used for GitHub CLI (GH_TOKEN).'
-        required: true
       SLACK_SECURITY_WEBHOOK_URL:
         description: 'Slack webhook URL to post vulnerability check failure. If empty, the action will not post a message.'
         required: false
 
 env:
   TERM: dumb
-  GPR_USERNAME: ${{ github.repository_owner }}
-  GPR_PASSWORD: ${{ secrets.CR_PAT }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     env:
-      GH_TOKEN: ${{ secrets.CR_PAT }}
+      GH_TOKEN: ${{ github.token }}
 
     outputs:
       version: ${{ steps.version.outputs.version }}
